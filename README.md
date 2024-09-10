@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # llm_app
 
 
@@ -8,3 +9,7 @@
 ```bash
 python ecommerce_data.py 
 ```
+=======
+# chatbot
+langchain chatbot 
+>>>>>>> d2656c4c272f11ef08403f3a968f7793e152cc71
