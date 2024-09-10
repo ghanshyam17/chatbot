@@ -5,12 +5,14 @@ from langchain.agents.agent_types import AgentType
 from langchain_community.utilities import SQLDatabase
 
 from langchain.memory import ConversationBufferMemory
-
 from dotenv import load_dotenv
 import os
 
-# Load environment variables from .env file
 load_dotenv()
+
+openai_api_key = os.getenv("OPENAI_API_KEY")
+
+# Load environment variables from .env file
 
 #  Define a Chat History Storage
 
@@ -26,8 +28,7 @@ class ChatHistory:
 
 
 # Now you can access OPENAI_API_KEY like this
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
+OPENAI_API_KEY = "sk-KqQQCOuMMZVJMCwDG24e9A79YaIz2kIWGP3FYcS0HOT3BlbkFJE6hDryf7Gyu5hOusi0fxFspE1O2dQghkQaaVxlYJcA"
 
 VERBOSE_LANGCHAIN = True
 def create_agent(
@@ -104,10 +105,12 @@ def interact_with_agent(agent):
 
 # Example usage
 if __name__ == "__main__":
-#     chat_history = ChatHistory()
-#     agent = create_agent("sqlite:////Users/ghanshyam/Projects/fornax/llm/langchain/ecommerce.db", chat_history=chat_history)  # Adjust the db_uri as necessary
+    # chat_history = ChatHistory()
+    # agent = create_agent("sqlite:////Users/ghanshyam/Projects/fornax/llm/langchain/ecommerce.db", chat_history=chat_history)  # Adjust the db_uri as necessary
     
     memory = ConversationBufferMemory()
-    agent = create_agent("sqlite:////Users/ghanshyam/Projects/fornax/llm/langchain/ecommerce.db", memory=memory)
-    print("I created agent....")
+    # agent = create_agent("sqlite:///C:/Users/Gsutar/ghanshyam/excel_tool/ai_bot/chatbot/ecommerce1.db", memory=memory)
+    agent = create_agent("sqlite:///C:/Users/Gsutar/ghanshyam/excel_tool/analysis.db", memory=memory)
+
+    print("agent....")
     interact_with_agent(agent)

@@ -1,57 +1,47 @@
 import pandas as pd
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy import create_engine
+import openpyxl
+import warnings
 
-# Step 1: Read the CSV file
-df = pd.read_excel('/Users/ghanshyam/Projects/fornax/llm/langchain/Krylon 09-05-2024_saved 2.xlsx', encoding='ISO-8859-1')
-# Convert NaN in CustomerID to None for database compatibility
-df['CustomerID'] = df['CustomerID'].apply(lambda x: None if pd.isna(x) else int(x))
-print(df.info())
+# Function to get data from a named range in Excel
+def get_named_range_data(workbook, named_range_name):
+    named_range = workbook.defined_names[named_range_name]
+    sheet_name, cell_range = list(named_range.destinations)[0]  # Extract the sheet name and range
+    sheet = workbook[sheet_name]
+    return [[cell.value for cell in row] for row in sheet[cell_range]] 
 
-# Step 2: Define your database model
-Base = declarative_base()
+# Suppress specific warnings from openpyxl
+warnings.filterwarnings("ignore", category=UserWarning, module='openpyxl')
 
-class Product(Base):
-    __tablename__ = 'products'
-    id = Column(Integer, primary_key=True)
-    InvoiceNo = Column(String)  # Changed to String to match CSV schema
-    StockCode = Column(String)
-    Description = Column(String)
-    Quantity = Column(Integer)
-    InvoiceDate = Column(DateTime)  # Kept as DateTime, assuming correct format in CSV
-    UnitPrice = Column(Float)
-    CustomerID = Column(Integer, nullable=True)  # Correct as per schema, handling None values
-    Country = Column(String)
+# Step 1: Load the Excel file using openpyxl
+workbook = openpyxl.load_workbook(r'C:\Users\Gsutar\ghanshyam\excel_tool\coverage\Krylon 09-09-2024.xlsx', data_only=True)
+# Step 2: Extract data from the named range "analysis_data"
+analysis_data = get_named_range_data(workbook, 'analysis_data')
 
-# Ensure the correct database file path
-engine = create_engine('sqlite:///ecommerce.db', echo=True)
-Base.metadata.create_all(engine)  # This line creates the table schema
+# Step 2: Extract data from the named range "analysis_data"
+analysis_data = get_named_range_data(workbook, 'analysis_data')
 
-# Step 4: Insert data into the database
-Session = sessionmaker(bind=engine)
-session = Session()
+# Step 3: Convert the extracted data into a pandas DataFrame
+# Assuming the first row contains headers
+analysis_data_df = pd.DataFrame(analysis_data[1:], columns=analysis_data[0])
 
+# Step 4: Handle unnamed columns by assigning default names
+# This will replace 'None' or empty column headers with 'Unnamed_X'
+analysis_data_df.columns = [
+    f"Unnamed_{i}" if col is None or col == '' else col for i, col in enumerate(analysis_data_df.columns)
+]
+
+# Print the DataFrame columns to verify that unnamed columns are handled
+print(analysis_data_df.columns)
+
+# Step 5: Create the SQLite database using SQLAlchemy and pandas `to_sql`
+# SQLite database path and engine creation
+engine = create_engine('sqlite:///analysis.db', echo=True)
+
+# Step 6: Write the DataFrame to the SQLite database
+# This will create a table named 'analysis' with the DataFrame columns and data
 try:
-    for index, row in df.iterrows():
-        product = Product(
-            InvoiceNo=row['InvoiceNo'], 
-            StockCode=row['StockCode'], 
-            Description=row['Description'], 
-            Quantity=row['Quantity'], 
-            InvoiceDate=pd.to_datetime(row['InvoiceDate']),  # Assuming the InvoiceDate is in a format pandas can parse
-            UnitPrice=row['UnitPrice'], 
-            CustomerID=row['CustomerID'],  # Now correctly handling None values
-            Country=row['Country']
-        )
-        session.add(product)
-    session.commit()
-
-    # Step 5: Verify data insertion
-    inserted_products = session.query(Product).limit(5).all()
-    for product in inserted_products:
-        print(f"Product ID: {product.id}, Description: {product.Description}")
+    analysis_data_df.to_sql('analysis', con=engine, if_exists='replace', index=False)
+    print("Data inserted successfully into the database.")
 except Exception as e:
-    session.rollback()
     print(f"An error occurred: {e}")
-finally:
-    session.close()
