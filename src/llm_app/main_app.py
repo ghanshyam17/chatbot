@@ -13,7 +13,7 @@ load_dotenv()
 
 # Get the OpenAI API key from environment
 openai_api_key = os.getenv("OPENAI_API_KEY")
-
+print(openai_api_key)
 # Set verbose flag for Langchain
 VERBOSE_LANGCHAIN = True
 
@@ -38,7 +38,7 @@ def create_agent(
     )
 
 # Streamlit App Title
-st.title("SQL Database Chatbot with Langchain Agent")
+st.title("Analysis Data Chatbot")
 
 # Initialize memory in session state
 if "memory" not in st.session_state:
@@ -48,7 +48,7 @@ if "memory" not in st.session_state:
 agent = create_agent("sqlite:///C:/Users/Gsutar/ghanshyam/excel_tool/analysis.db", memory=st.session_state.memory)
 
 # Input field for the user to ask questions
-prompt = st.text_input("Ask a question about the database", value="What is the Plan Qty for the item: ")
+prompt = st.text_input("Ask a question about the database", value="provide record details for the item ?")
 
 # Button to submit the question to the agent
 if st.button("Ask Agent"):
@@ -60,7 +60,5 @@ if st.button("Ask Agent"):
         st.write(f"**You**: {prompt}")
         st.write(f"**Agent**: {result}")
 
-        # Display the conversation history managed by ConversationBufferMemory
-        st.text_area("Conversation History", value=st.session_state.memory.buffer, height=300)
     else:
         st.write("Please enter a question.")
