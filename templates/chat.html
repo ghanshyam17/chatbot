@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat with AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Chat with AI</h1>
+    <form method="post">
+        <input type="text" name="user_input" placeholder="Type your message..." autofocus>
+        <input type="submit" value="Send">
+    </form>
+    <div class="chat-history">
+        {% for speaker, message in session['history'] %}
+            <p><strong>{{ speaker }}:</strong> {{ message }}</p>
+        {% endfor %}
+    </div>
+</body>
+</html>
